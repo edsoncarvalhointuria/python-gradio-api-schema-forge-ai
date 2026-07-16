@@ -2,7 +2,7 @@ import gradio as gr
 import os
 
 def validar_api(json_entrada):
-    return {data:f"SUCESSO! ModelScope 2026 ativo. Enviado: {json_entrada}"}
+    return f"SUCESSO! ModelScope 2026 ativo. Enviado: {json_entrada}"
 
 # Criamos o bloco (Padrão recomendado no Gradio 6)
 with gr.Blocks() as demo:
@@ -13,6 +13,7 @@ with gr.Blocks() as demo:
     botao.click(fn=validar_api, inputs=entrada, outputs=saida)
 
 print('olá mundo')
+demo.queue(default_concurrency_limit=None) 
 
 if __name__ == "__main__":
     # O ModelScope exige escutar na interface aberta (0.0.0.0) 

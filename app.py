@@ -13,4 +13,4 @@ demo = gr.Interface(
 print('olá mundo')
 # O comando que levanta o servidor na porta correta
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    demo.launch(server_name="0.0.0.0", server_port=15181)

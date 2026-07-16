@@ -3,6 +3,10 @@
 domain: #领域：cv/nlp/audio/multi-modal/AutoML
 # - cv
 tags: #自定义标签
+
+sdk: gradio
+sdk_version: 4.44.0
+
 -
 datasets: #关联数据集
   evaluation:
@@ -15,11 +19,13 @@ models: #关联模型
 #- iic/ofa_ocr-recognition_general_base_zh
 
 ## 启动文件(若SDK为Gradio/Streamlit，默认为app.py, 若为Static HTML, 默认为index.html)
-# deployspec:
-#   entry_file: app.py
+deployspec:
+    entry_file: app.py
+    
 license: Apache License 2.0
 ---
 #### Clone with HTTP
 ```bash
  git clone https://www.modelscope.ai/studios/edsoncarvalhointuria/schema-forg-ai.git
+ 
 ```

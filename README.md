@@ -9,11 +9,11 @@ sdk_version: 4.44.0
 
 datasets: #关联数据集
   evaluation:
-  #- iic/ICDAR13_HCTR_Dataset
+  - iic/ICDAR13_HCTR_Dataset
   test:
-  #- iic/MTWI
+  - iic/MTWI
   train:
-  #- iic/SIBR
+  - iic/SIBR
 models: #关联模型
 #- iic/ofa_ocr-recognition_general_base_zh
 

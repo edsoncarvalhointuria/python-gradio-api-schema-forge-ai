@@ -1,16 +1,24 @@
 import gradio as gr
+import os
 
-# Esta é a função que será acionada pela nossa API
 def validar_api(json_entrada):
-    return f"SUCESSO! A API do ModelScope está viva. Você enviou: {json_entrada}"
+    return f"SUCESSO! ModelScope 2026 ativo. Enviado: {json_entrada}"
 
-# Aqui configuramos a interface que gera a API invisível por trás
-demo = gr.Interface(
-    fn=validar_api, 
-    inputs="text", 
-    outputs="text"
-)
+# Criamos o bloco (Padrão recomendado no Gradio 6)
+with gr.Blocks() as demo:
+    entrada = gr.Textbox(label="Input JSON/Texto")
+    botao = gr.Button("Validar")
+    saida = gr.Textbox(label="Resultado")
+    
+    botao.click(fn=validar_api, inputs=entrada, outputs=saida)
+
 print('olá mundo')
-# O comando que levanta o servidor na porta correta
+
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=15181)
+    # O ModelScope exige escutar na interface aberta (0.0.0.0) 
+    # e na porta 15181 capturada pelo proxy Quart no seu log
+    demo.launch(
+        server_name="0.0.0.0", 
+        server_port=15181,
+        allowed_paths=["*"]
+    )

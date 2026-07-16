@@ -10,6 +10,6 @@ demo = gr.Interface(
     inputs="text", 
     outputs="text"
 )
-
+print('olá mundo')
 # O comando que levanta o servidor na porta correta
 demo.launch()

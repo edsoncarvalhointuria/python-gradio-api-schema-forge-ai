@@ -25,9 +25,10 @@ def askToModel(user: str, type: Literal["zod", "yaml", "json"]):
     inputs = tokenizer.apply_chat_template(
         messages, add_generation_prompt=True, tokenize=True, return_tensors="pt"
     ).to(model.device)
+    print("iniciando", inputs)
 
     output = model.generate(inputs, max_new_tokens=2048)
-
+    print("dados pegos", output)
     size_messages = inputs.shape[1]
     model_response = output[0][size_messages:]
 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚀 Schema Forge AI - Motor de Inferência / Inference Engine
 
 [![🇧🇷 Português]](#-português) | [![🇺🇸 English]](#-english)
@@ -118,3 +119,21 @@ python app.py
 
 ### ☁️ Deployment (ModelScope / Alibaba Cloud)
 This project has been optimized for direct deployment on ModelScope. The platform will automatically detect the `app.py` file in the project's root and build the Docker container, injecting the dependencies from `requirements.txt`. No extra virtual hardware configuration is required.
+=======
+---
+# 详细文档见https://modelscope.cn/docs/%E5%88%9B%E7%A9%BA%E9%97%B4%E5%8D%A1%E7%89%87
+
+
+
+
+## 启动文件(若SDK为Gradio/Streamlit，默认为app.py, 若为Static HTML, 默认为index.html)
+deployspec:
+   entry_file: app.py
+license: Apache License 2.0
+---
+#### Clone with HTTP
+```bash
+ git clone https://www.modelscope.ai/studios/edsoncarvalhointuria/schema-forg-ai.git
+ 
+```
+>>>>>>> alibaba/master

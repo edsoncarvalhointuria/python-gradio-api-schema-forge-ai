@@ -1,6 +1,6 @@
 # 🚀 Schema Forge AI - Motor de Inferência / Inference Engine
 
-[![🇧🇷 Português]](#br-português) | [![🇺🇸 English]](#us-english)
+[![🇧🇷 Português]](#-português) | [![🇺🇸 English]](#-english)
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-Float16-EE4C2C.svg)

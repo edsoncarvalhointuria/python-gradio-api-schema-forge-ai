@@ -1,44 +1,58 @@
-import gradio as gr
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from typing import Literal
-
-system_messages = {
-    "zod": "Você é um Engenheiro de Software Sênior especialista em TypeScript. Sua tarefa é receber um objeto JSON bruto e gerar o código TypeScript correspondente utilizando a biblioteca 'zod' e estendendo com '@asteasolutions/zod-to-openapi'. Crie schemas modulares, fortemente tipados e inclua descrições e exemplos OpenAPI detalhados baseados nos valores do JSON. Retorne APENAS o código TypeScript, sem formatação markdown (```typescript) e sem explicações textuais.",
-    "yaml": "Você é um Arquiteto de Software especialista em documentação de APIs. Converta o JSON de entrada em uma especificação OpenAPI 3.0 em formato YAML. Estruture corretamente os componentes (schemas) e garanta a tipagem rigorosa. Retorne APENAS o código YAML válido, sem comentários adicionais.",
-    "json": "Você é um Arquiteto de Dados especialista em modelagem JSON. Sua tarefa é analisar os dados brutos de entrada e gerar um JSON Schema (Draft 2020-12) robusto e perfeitamente validado. Defina rigorosamente os tipos (string, number, boolean, array, object), especifique quais propriedades são obrigatórias e mapeie estruturas aninhadas com precisão. Retorne APENAS o JSON Schema cru, sem formatação markdown (```json) e sem conversas textuais.",
-}
+import modal
+from pydantic import BaseModel
 
 
-model_path = "edsoncarvalhointuria/merged-schema-forg-ai"
-tokenizer = AutoTokenizer.from_pretrained(model_path)
-model = AutoModelForCausalLM.from_pretrained(
-    model_path, dtype=torch.float16, device_map="auto"
+def downloadModel():
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    model_name = "edsoncarvalhointuria/merged-schema-forg-ai"
+    AutoModelForCausalLM.from_pretrained(model_name)
+    AutoTokenizer.from_pretrained(model_name)
+
+
+image = (
+    modal.Image.debian_slim(python_version="3.13")
+    .pip_install("torch", "transformers", "accelerate", "pydantic", "fastapi[standard]")
+    .run_function(downloadModel)
 )
 
-
-def askToModel(user: str, type: Literal["zod", "yaml", "json"]):
-    messages = [
-        {"role": "system", "content": system_messages[type]},
-        {"role": "user", "content": user},
-    ]
-    inputs = tokenizer.apply_chat_template(
-        messages, add_generation_prompt=True, tokenize=True, return_tensors="pt"
-    ).to(model.device)
-    print("iniciando", inputs)
-
-    output = model.generate(**inputs, max_new_tokens=2048)
-
-    size_messages = inputs["input_ids"].shape[1]
-    model_response = output[0][size_messages:]
-
-    response = tokenizer.decode(model_response, skip_special_tokens=True)
-    print(response)
-
-    return {"response": response}
+app = modal.App("schema-forg-ai")
 
 
-window = gr.Interface(fn=askToModel, inputs=["text", "text"], outputs="json")
+class RequestData(BaseModel):
+    type: str
+    message: str
 
-if __name__ == "__main__":
-    window.launch()
+
+@app.cls(image=image, gpu="T4", timeout=120)
+class GeneratedSchema:
+    system_messages = {
+        "zod": "Você é um Engenheiro de Software Sênior especialista em TypeScript. Sua tarefa é receber um objeto JSON bruto e gerar o código TypeScript correspondente utilizando a biblioteca 'zod' e estendendo com '@asteasolutions/zod-to-openapi'. Crie schemas modulares, fortemente tipados e inclua descrições e exemplos OpenAPI detalhados baseados nos valores do JSON. Retorne APENAS o código TypeScript, sem formatação markdown (```typescript) e sem explicações textuais.",
+        "yaml": "Converta o JSON de entrada em uma especificação OpenAPI 3.0 em YAML com a indentação correta. Aloque as entidades dentro de 'components:\n  schemas:\n    NomeDaEntidade:'. Quando precisar referenciar, use o padrão estrito: $ref: '#/components/schemas/NomeDaEntidade'. Retorne apenas o código YAML.",
+        "json": "Você é um Arquiteto de Software especialista em documentação de APIs. Converta o JSON de entrada em uma especificação OpenAPI 3.0 em formato JSON estruturado. Inclua as raízes obrigatórias ('openapi', 'info', 'components' com os schemas, e 'paths'). Retorne APENAS o código JSON válido.",
+    }
+
+    @modal.enter()
+    def load_models(self):
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        model_name = "edsoncarvalhointuria/merged-schema-forg-ai"
+        self.model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    @modal.fastapi_endpoint(method="POST")
+    def questionToModel(self, json: RequestData):
+        messages = [
+            {"role": "system", "content": self.system_messages[json.type]},
+            {"role": "user", "content": json.message},
+        ]
+        inputs = self.tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=True, return_tensors="pt"
+        ).to("cuda")
+        output = self.model.generate(**inputs, max_new_tokens=2048)
+
+        total_input = inputs["input_ids"].shape[1]
+        model_reponse = output[0][total_input:]
+
+        response = self.tokenizer.decode(model_reponse, skip_special_tokens=True)
+        return {"response": response}
